@@ -15,9 +15,9 @@ export default {
     /* APIにアクセス */
     fetchAPI: function(path) {
       const response = axios.get(
-        `https://opendata.resas-portal.go.jp/api/v1/${path}`,
+        "https://opendata.resas-portal.go.jp/api/v1/${path}",
         {
-          headers: { "X-API-KEY": "CUyR79smOCQ19fWQWllDti0rBs15Dpcx0XkgqcAf" }
+          headers: { "X-API-KEY": ACCESS_TOKEN }
         }
       );
       return response;
