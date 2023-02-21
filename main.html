@@ -5,12 +5,14 @@
 
 </head>
 <body>
- <div>
+ <template>
+  <div>
     <div v-for="prefecture in prefectures" :key="prefecture.prefCode">
       <input type="checkbox" :id="'prefecture-' + prefecture.prefCode" :value="prefecture.prefCode" v-model="selectedPrefectures">
       <label :for="'prefecture-' + prefecture.prefCode">{{ prefecture.prefName }}</label>
     </div>
   </div>
+</template>
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <script src="index.js"></script>
 </body>
