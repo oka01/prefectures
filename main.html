@@ -5,20 +5,12 @@
 
 </head>
 <body>
-  <div class="prefectures-area">
-    <div v-for="prefecture in prefectures" :key="prefecture.id" class="prefecture">
-      <label :for="prefecture.id">
-        <input
-          type="checkbox"
-          :id="prefecture.id"
-          :checked="prefecture.isChecked"
-          @click="switchChart(prefecture.id, prefecture.name, prefecture.isChecked)"
-        />
-        {{ prefecture.name }}
-      </label>
+ <div>
+    <div v-for="prefecture in prefectures" :key="prefecture.prefCode">
+      <input type="checkbox" :id="'prefecture-' + prefecture.prefCode" :value="prefecture.prefCode" v-model="selectedPrefectures">
+      <label :for="'prefecture-' + prefecture.prefCode">{{ prefecture.prefName }}</label>
     </div>
   </div>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <script src="index.js"></script>
 </body>
