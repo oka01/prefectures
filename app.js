@@ -1,97 +1,69 @@
-const API_KEY = 'CUyR79smOCQ19fWQWllDti0rBs15Dpcx0XkgqcAf';
+// RESAS APIから都道府県一覧を取得するためのURL
+const PREFECTURES_API_URL = "https://opendata.resas-portal.go.jp/api/v1/prefectures";
 
-Vue.component('prefecture-checkbox', {
-  props: {
-    prefecture: Object,
-    selectedPrefectures: Array,
-  },
-  computed: {
-    isSelected() {
-      return this.selectedPrefectures.includes(this.prefecture.prefCode);
-    },
+// RESAS APIのAPIキー（ご自身のAPIキーに変更してください）
+const API_KEY = "CUyR79smOCQ19fWQWllDti0rBs15Dpcx0XkgqcAf";
+
+// Vue.jsのアプリケーションを作成する
+const app = new Vue({
+  el: "#app",
+  data: {
+    // チェックボックスの初期状態
+    checkboxes: {},
+    // 都道府県一覧
+    prefectures: [],
+    // 選択された都道府県の人口構成データ
+    populationData: [],
   },
   methods: {
-    toggleSelection() {
-      if (this.isSelected) {
-        const index = this.selectedPrefectures.indexOf(this.prefecture.prefCode);
-        this.selectedPrefectures.splice(index, 1);
-      } else {
-        this.selectedPrefectures.push(this.prefecture.prefCode);
+    // RESAS APIから都道府県一覧を取得する関数
+    async getPrefectures() {
+      try {
+        const response = await fetch(PREFECTURES_API_URL, {
+          headers: {
+            "X-API-KEY": API_KEY,
+          },
+        });
+        const data = await response.json();
+        this.prefectures = data.result;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    // 都道府県のチェックボックスが変更されたときに呼び出される関数
+    async onCheckboxChanged() {
+      // 選択された都道府県のコードを取得する
+      const selectedPrefectures = Object.keys(this.checkboxes).filter(
+        (key) => this.checkboxes[key]
+      );
+      if (selectedPrefectures.length === 0) {
+        return;
+      }
+      const prefCode = selectedPrefectures[0];
+
+      // 選択された都道府県の人口構成データを取得するためのURL
+      const POPULATION_API_URL = `https://opendata.resas-portal.go.jp/api/v1/population/composition/perYear?cityCode=-&prefCode=${prefCode}`;
+
+      try {
+        const response = await fetch(POPULATION_API_URL, {
+          headers: {
+            "X-API-KEY": API_KEY,
+          },
+        });
+        const data = await response.json();
+
+        // 取得したデータから、折れ線グラフ用のデータを作成する
+        this.populationData = data.result.data[0].data.map((item) => ({
+          year: item.year,
+          value: item.value,
+        }));
+      } catch (error) {
+        console.log(error);
       }
     },
   },
-  template: `
-    <div>
-      <input type="checkbox" :id="'prefecture-' + prefecture.prefCode" :value="prefecture.prefCode" :checked="isSelected" @change="toggleSelection">
-      <label :for="'prefecture-' + prefecture.prefCode">{{ prefecture.prefName }}</label>
-    </div>
-  `
-});
-
-Vue.component('population-chart', {
-  props: {
-    data: Array,
-    label: String,
-  },
-  mounted() {
-    this.renderChart();
-  },
-  methods: {
-    renderChart() {
-      const labels = this.data.map(item => item.year);
-      const values = this.data.map(item => item.value);
-
-      const canvas = this.$refs.chart;
-      const ctx = canvas.getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: this.label,
-            data: values,
-            fill: false,
-            borderColor: 'blue',
-            pointBackgroundColor: 'blue',
-          }],
-        },
-        options: {
-          scales: {
-            yAxes: [{
-              ticks: {
-                beginAtZero: true,
-              },
-            }],
-          },
-        },
-      });
-    },
-  },
-  template: '<canvas ref="chart"></canvas>',
-});
-
-new Vue({
-  el: '#app',
-  data: {
-    prefectures: [],
-    selectedPrefectures: [],
-    populationData: null,
-  },
   created() {
-    this.fetchPrefectures();
+    this.getPrefectures();
   },
-  computed: {
-    isSelectionValid() {
-      return this.selectedPrefectures.length > 0;
-    },
-  },
-  methods: {
-    async fetchPrefectures() {
-      const url = 'https://opendata.resas-portal.go.jp/api/v1/prefectures';
-      const response = await fetch(url, {
-        headers: {
-          'X-API-KEY': API_KEY,
-        },
-      });
-
-    
+});
