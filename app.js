@@ -94,5 +94,4 @@ new Vue({
         },
       });
 
-      if (!response.ok) {
-        throw new Error('Network response
+    
